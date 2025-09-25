@@ -27,6 +27,18 @@ This project implements a React component where users can add and remove text-ba
 - Singleton DB Instance: Ensures only one AppDB instance exists across the app.
 - Dexie Entity Mapping: `Comment` class extends Dexie `Entity` to include methods like `reply()` and `delete()`.
 - Atomic Recursive Delete: Deletes a comment and all nested replies in a single transaction.
+- A `Comment` is represented by the TypeScript interface below. Notable are the `id` and `parentId` fields. This allows us to represent nested comments as a tree. In the code, the top-level comments have a `parentId` of `-1`: 
+```typescript
+interface Comment {
+	id: number
+	text: string
+	parentId: number | null
+	createdAt: Date
+
+	delete: () => Promise<void>
+	reply: (text: string) => Promise<Comment | undefined>
+}
+```
 
 # Overview of Project Structure
 ```
