@@ -1,74 +1,100 @@
-# React + TypeScript + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
 # f9Ec6cJe
+This project implements a React component where users can add and remove text-based comments.
+
+## Screenshot
+![Comments App Screenshot](./screenshot.png)
+
+# Features
+- Display a list of comments.
+- Add comments.
+- Reply to existing comments.
+- Delete comments.
+- Local persistence with IndexedDB.
+- Cross-tab updates without page refresh.
+
+# Tech Stack
+- TypeScript
+- React
+- Vite
+- TailwindCSS
+- shadcn/ui: Uses the `Button` and `Input` components only
+- Dexie.js: A minimalistic wrapper for IndexedDB
+- Vitest + React Testing Library for tests
+
+# Design Patterns and Notable Decisions
+- I chose Dexie for its ease of use, built-in transactions, and `liveQuery` for reactive updates across tabs. Regarding cross tab updates, an alternative could have been `BroadcastChannel` API.
+- Singleton DB Instance: Ensures only one AppDB instance exists across the app.
+- Dexie Entity Mapping: `Comment` class extends Dexie `Entity` to include methods like `reply()` and `delete()`.
+- Atomic Recursive Delete: Deletes a comment and all nested replies in a single transaction.
+
+# Overview of Project Structure
+```
+├── src
+│   ├── App.tsx                 # Main app to be tested
+│   ├── components
+│   │   ├── CommentItem.tsx     # Single comment component
+│   │   ├── CommentList.tsx     # List of comments and replies
+│   │   ├── Comments.tsx        # Main comments container
+│   │   └── ui                  # shadcn/ui components
+│   │       ├── button.tsx
+│   │       └── input.tsx
+│   ├── db
+│   │   ├── AppDB.ts            # Dexie DB setup
+│   │   ├── Comment.ts          # Comment entity with methods
+│   │   └── db.ts               # Singleton DB instance
+│   ├── index.css
+│   ├── main.tsx
+│   ├── setupTests.ts           # Test setup
+│   └── types.ts
+├── tests
+│   ├── Comments.test.tsx       # Comments UI tests
+│   └── db.test.ts              # Database tests
+ ```
+
+# Example Usage
+```typescript
+import Comments  from  "./components/Comments"
+
+function  App() {
+	return (
+		<div className="p-4">
+			<h1 className="font-bold mb-4">Comments</h1>
+			<Comments />
+		</div>
+	)
+}
+export  default  App
+```
+ - Adding a root comment – Type text into the input at the top and click Comment.
+ - Replying to a comment – Click Reply under a comment, type text, and click the reply button.
+ - Deleting a comment – Click Delete. All nested replies are deleted atomically.
+
+# Running the Project
+```
+git clone <repo-url>
+npm install
+npm run dev
+```
+Open the app in your browser at [http://localhost:5173/](http://localhost:5173/) and interact with the component.
+
+# Running Tests
+```
+npm run test
+```
+
+## Tests cover:
+- Creating root comments
+- Adding replies to comments
+- Recursive deletion
+- Data persistence
+- Comment text correctness
+
+## Limitations and Future Improvements
+- Error Handling: Currently, there is no error handling for database operations or user actions. In a production-ready version, I would:
+	- Wrap async database calls in try/catch blocks.
+	- Show user-friendly error messages.
+	- Handle failures in transactions gracefully to avoid partial updates.
+- Delete Confirmation: A confirmation popover before deletion could improve UX and prevent accidental data loss.
+- Input Validation: While empty comments are ignored, further validation like max length, prohibited content, etc could be added.
+- Performance Optimization: For extremely large comment trees, virtualization or pagination could be considered to maintain UI performance.
